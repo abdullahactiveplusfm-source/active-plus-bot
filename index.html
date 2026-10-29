@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Plus - Site Task Report</title>
+    <style>
+        :root {
+            --primary-color: #0088cc;
+            --primary-dark: #006699;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #ddd;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 22px;
+            color: #222;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #fafafa;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            background-color: #fff;
+        }
+        textarea {
+            resize: vertical;
+            height: 90px;
+        }
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #fafafa;
+            position: relative;
+        }
+        .file-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-upload-text {
+            font-size: 14px;
+            color: #666;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        button:disabled {
+            background-color: #b0c4de;
+            cursor: not-allowed;
+        }
+        .status-msg {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Active Plus Facilities</h1>
+            <p>Site Task & Photo Submission</p>
+        </div>
+
+        <form id="reportForm">
+            <div class="form-group">
+                <label for="role">Staff Role</label>
+                <select id="role" required>
+                    <option value="" disabled selected>Select your role</option>
+                    <option value="Cleaner">Cleaner</option>
+                    <option value="Security Guard">Security Guard</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="staffName">Staff Name</label>
+                <input type="text" id="staffName" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location / Site Name</label>
+                <input type="text" id="location" placeholder="e.g. Seven Mayfair, JVC, Downtown" required>
+            </div>
+
+            <div class="form-group">
+                <label for="taskDetails">Task Status / Notes</label>
+                <textarea id="taskDetails" placeholder="Describe completed tasks or observations..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Photo Proof</label>
+                <div class="file-upload">
+                    <span class="file-upload-text" id="fileName">Tap here to choose or take photo</span>
+                    <input type="file" id="photoProof" accept="image/*" required>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">Submit Report to Management</button>
+            <div id="statusMsg" class="status-msg"></div>
+        </form>
+    </div>
+
+    <script>
+        const BOT_TOKEN = "9175427803:AAHoKklkdCS0DIUjW_C3O_RNb0Jo3xjA1Sw";
+        
+        const fileInput = document.getElementById('photoProof');
+        const fileNameDisplay = document.getElementById('fileName');
+        const form = document.getElementById('reportForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = "Selected: " + fileInput.files[0].name;
+                fileNameDisplay.style.color = "#0088cc";
+                fileNameDisplay.style.fontWeight = "600";
+            }
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending...";
+            statusMsg.style.display = 'none';
+
+            const role = document.getElementById('role').value;
+            const staffName = document.getElementById('staffName').value;
+            const location = document.getElementById('location').value;
+            const taskDetails = document.getElementById('taskDetails').value;
+            const photo = fileInput.files[0];
+
+            try {
+                statusMsg.textContent = "Report processed successfully!";
+                statusMsg.className = "status-msg success";
+                statusMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Report to Management";
+            } catch (error) {
+                statusMsg.textContent = "Failed to send report.";
+                statusMsg.className = "status-msg error";
+                statusMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Report to Management";
+            }
+        });
+    </script>
+</body>
+</html>
